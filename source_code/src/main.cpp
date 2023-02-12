@@ -5,6 +5,7 @@
 #include <ESP8266mDNS.h>
 #include <OneWire.h>
 #include <DallasTemperature.h>
+#include <ArduinoJson.h>
 
 #include "index.h"
 #include "WiFiCredentials.h"
@@ -53,8 +54,7 @@ void connectToWiFi()
 }
 
 void handleRoot() {
- String s = mainPage(targetTemp,actualTemp,heating); //Read HTML contents
- server.send(200, "text/html", s); //Send web page
+ server.send(200, "text/html", MAIN_page); //Send web page
 }
 
 void setTargetHandler()
@@ -69,12 +69,28 @@ void changeTarget(float diff)
   server.send(200);
 }
 
+
+
+
+void getData()
+{
+  const int cap = JSON_OBJECT_SIZE(20);
+  char output[128]; 
+  StaticJsonDocument<cap> doc;
+  doc["actual"] = actualTemp;
+  doc["target"] = targetTemp;
+  doc["state"] = heatingToString(heating);
+  serializeJson(doc,output,128);
+  server.send(200,"application/json",output);
+}
+
 void setHandlers()
 {
   server.on("/", handleRoot);
   server.on("/target/set", HTTPMethod::HTTP_POST , setTargetHandler);
   server.on("/target/increase", HTTPMethod::HTTP_POST ,[](){changeTarget(STEP);});
   server.on("/target/decrease", HTTPMethod::HTTP_POST , [](){changeTarget(-STEP);});
+  server.on("/data", HTTPMethod::HTTP_GET , getData);
 }
 
 void execHeating()
@@ -89,7 +105,7 @@ void measure()
   if(actualTemp == DEVICE_DISCONNECTED_C) 
   {
     heating = Heating::ERROR;
-    actualTemp = 555;
+    actualTemp = 0.0f;
   }
   else
   {
