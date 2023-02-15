@@ -12,6 +12,13 @@
 #define STEP 2.0f
 #define MEASURE_PERIOD_IN_MILLIS 1000
 
+//PINOUT
+//==================================================
+#define ONE_WIRE_PIN 2
+#define TRIAC_PIN 0
+#define ZERO_DETECTION_PIN 3
+//==================================================
+
 
 //Configuration
 //==================================================
@@ -21,7 +28,7 @@ float hysteresis = 1.0f;
 //==================================================
 
 
-OneWire oneWire(0);
+OneWire oneWire(ONE_WIRE_PIN);
 DallasTemperature sensors(&oneWire);
 
 ESP8266WebServer server(80);
@@ -32,24 +39,27 @@ Heating heating = Heating::OFF;
 
 unsigned long previousMillis = 0;
 
+unsigned long previousMillisZero = 0;
+unsigned long diff = 0;
+
 
 void connectToWiFi()
 {
   // Connect to Wi-Fi network with SSID and password
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
+  /// Serial.print("Connecting to ");
+  /// Serial.println(ssid);
   WiFi.setHostname("Wytrawiarka");
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
-    Serial.print(".");
+    /// Serial.print(".");
   }
   // Print local IP address and start web server
-  Serial.println("");
-  Serial.println("WiFi connected.");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  if (MDNS.begin("wytrawiarka")) Serial.println("MDNS started.");
+  /// Serial.println("");
+  /// Serial.println("WiFi connected.");
+  /// Serial.println("IP address: ");
+  /// Serial.println(WiFi.localIP());
+  if (MDNS.begin("wytrawiarka")) /// Serial.println("MDNS started.");
   server.begin();
 }
 
@@ -69,9 +79,6 @@ void changeTarget(float diff)
   server.send(200);
 }
 
-
-
-
 void getData()
 {
   const int cap = JSON_OBJECT_SIZE(20);
@@ -84,6 +91,16 @@ void getData()
   server.send(200,"application/json",output);
 }
 
+void getDebugData()
+{
+  const int cap = JSON_OBJECT_SIZE(20);
+  char output[128]; 
+  StaticJsonDocument<cap> doc;
+  doc["freq"] = 1000.0f/diff;
+  serializeJson(doc,output,128);
+  server.send(200,"application/json",output);
+}
+
 void setHandlers()
 {
   server.on("/", handleRoot);
@@ -91,11 +108,13 @@ void setHandlers()
   server.on("/target/increase", HTTPMethod::HTTP_POST ,[](){changeTarget(STEP);});
   server.on("/target/decrease", HTTPMethod::HTTP_POST , [](){changeTarget(-STEP);});
   server.on("/data", HTTPMethod::HTTP_GET , getData);
+  server.on("/debug", HTTPMethod::HTTP_GET , getDebugData);
 }
 
 void execHeating()
 {
-  
+  if(heating == Heating::ON) digitalWrite(TRIAC_PIN,LOW);
+  else digitalWrite(TRIAC_PIN,HIGH);
 }
 
 void measure()
@@ -139,14 +158,31 @@ void controllerWork()
   }
 }
 
+void IRAM_ATTR zeroDetectionISR()
+{
+  unsigned long now = millis();
+  diff = now - previousMillisZero;
+  previousMillisZero = now;
+}
+
 void setup() 
 {
-  Serial.begin(115200);
+  ////// Serial.begin(115200);
+
+  //===WIFI===
   connectToWiFi();
   setHandlers();
   server.begin();
-  sensors.begin();              
-  Serial.println("HTTP server started");
+  ////// Serial.println("HTTP server started");
+  //===OI===
+  pinMode(TRIAC_PIN, OUTPUT);
+  digitalWrite(TRIAC_PIN,HIGH);
+  pinMode(ZERO_DETECTION_PIN, FUNCTION_3);
+  attachInterrupt(digitalPinToInterrupt(ZERO_DETECTION_PIN),zeroDetectionISR,RISING);
+  sensors.setResolution(12);
+  sensors.begin();   
+  ////// Serial.println("IO started");           
+
 }
 
 void loop() 
@@ -156,7 +192,7 @@ void loop()
   unsigned long now = millis();
   if(now - previousMillis > MEASURE_PERIOD_IN_MILLIS)
   {
-    Serial.println("Measure...");
+    /// Serial.println("Measure...");
     previousMillis = now;
     measure();
     controllerWork();
