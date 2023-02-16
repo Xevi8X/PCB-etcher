@@ -10,7 +10,8 @@
 #include "index.h"
 #include "WiFiCredentials.h"
 #define STEP 2.0f
-#define MEASURE_PERIOD_IN_MILLIS 1000
+#define MEASURE_PERIOD_IN_MILLIS 500
+#define TRIAC_DELAY 3 //in ms, selected experimentally
 
 //PINOUT
 //==================================================
@@ -91,6 +92,12 @@ void getDebugData()
   server.send(200,"application/json",output);
 }
 
+void setDebugParam()
+{
+   int param = server.arg("param").toInt();
+   server.send(200);
+}
+
 void setPower()
 {
    power = server.arg("power").toInt();
@@ -104,13 +111,14 @@ void setHandlers()
   server.on("/target/increase", HTTPMethod::HTTP_POST ,[](){changeTarget(STEP);});
   server.on("/target/decrease", HTTPMethod::HTTP_POST , [](){changeTarget(-STEP);});
   server.on("/data", HTTPMethod::HTTP_GET , getData);
-  server.on("/debug", HTTPMethod::HTTP_GET , getDebugData);
+  server.on("/debug/get", HTTPMethod::HTTP_GET , getDebugData);
+  server.on("/debug/set", HTTPMethod::HTTP_POST , setDebugParam);
   server.on("/setPower", HTTPMethod::HTTP_POST , setPower);
 }
 
 void execHeating()
 {
-  if(heating == Heating::ON) power = 127;
+  if(heating == Heating::ON) power = 255;
   else power = 0;
 }
 
@@ -159,7 +167,7 @@ void IRAM_ATTR zeroCrossingISR()
 {
   digitalWrite(TRIAC_PIN,HIGH);
   if(power == 0) return;
-  uint32_t ticks = 12 * (255-power) + 5; // (10ms/255)/3.2us ~= 12
+  uint32_t ticks = 12 * (255-power) + TRIAC_DELAY; // (10ms/255)/3.2us ~= 12 
   timer1_write(ticks);
 }
 
@@ -179,7 +187,7 @@ void setup()
   digitalWrite(TRIAC_PIN,HIGH);
   pinMode(ZERO_DETECTION_PIN, FUNCTION_3);
   attachInterrupt(digitalPinToInterrupt(ZERO_DETECTION_PIN),zeroCrossingISR,FALLING);
-  sensors.setResolution(12);
+  sensors.setResolution(11); //0.125°C, 375ms
   sensors.begin(); 
   //===TIMER===
   timer1_isr_init();
