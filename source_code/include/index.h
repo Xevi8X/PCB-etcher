@@ -1,4 +1,4 @@
-#include "heating.h"
+
 
 const char MAIN_page[] PROGMEM = R"=====(
 <HTML>
@@ -30,7 +30,8 @@ const char MAIN_page[] PROGMEM = R"=====(
 				var json = JSON.parse(this.responseText);
       			document.getElementById("target").innerHTML = json.target;
 				document.getElementById("actual").innerHTML = json.actual;
-				document.getElementById("state").innerHTML = json.state;
+				document.getElementById("power").innerHTML = json.power;
+				document.getElementById("status").innerHTML = json.status;
     			}
   			};
   			xhttp.open("GET", "data", true);
@@ -40,22 +41,9 @@ const char MAIN_page[] PROGMEM = R"=====(
 	<CENTER>
 		<p>Target temperature: <span id="target">0</span> &#8451 <input type = "button" onclick = "increase()" value = "+">  <input type = "button" onclick = "decrease()" value = "-"></p> 
 		<p>Actual temperature: <span id="actual">0</span> &#8451</p>
-		<p>Heating: <span id="state">UNKNOWN</span> </p>
+		<p>Heating power: <span id="power">0</span> %</p>
+		<p>Status: <span id="status">UNKNOWN</span> </p>
 	</CENTER>	
 </BODY>
 </HTML>
 )=====";
-
-inline const char* heatingToString(Heating state)
-{
-    switch(state)
-    {
-        case(Heating::ON):
-            return "ON";
-        case(Heating::OFF):
-            return "OFF";
-        case(Heating::ERROR):
-            return "ERROR";
-    }
-	return "UNKNOWN";
-}
