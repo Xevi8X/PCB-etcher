@@ -1,4 +1,4 @@
-enum programStatus {WORKING, ERROR_TEMP_SENSOR};
+enum programStatus {WORKING, ERROR_TEMP_SENSOR,ERROR_OVERHEAT};
 
 typedef struct state_t
 {

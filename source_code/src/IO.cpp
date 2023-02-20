@@ -4,6 +4,7 @@
 
 #include "program_state.h"
 #include "IO.hpp"
+#include "config.h"
 
 
 OneWire oneWire(ONE_WIRE_PIN);
@@ -51,6 +52,10 @@ void measure()
   {
     state.status = programStatus::ERROR_TEMP_SENSOR;
     state.actualTemp = 0.0f;
+  }
+  else if(state.actualTemp > OVERHEAT_PROTECTION)
+  {
+    state.status = programStatus::ERROR_OVERHEAT;
   }
   else
   {

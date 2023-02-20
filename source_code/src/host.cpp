@@ -48,6 +48,8 @@ const char* programStatusToString(programStatus state)
             return "WORKING";
         case(programStatus::ERROR_TEMP_SENSOR):
             return "ERROR_TEMP_SENSOR";
+        case(programStatus::ERROR_OVERHEAT):
+            return "ERROR_OVERHEAT";
     }
 	return "UNKNOWN";
 }
