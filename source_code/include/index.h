@@ -61,6 +61,8 @@ const char chart_temp[] PROGMEM = R"=====(
 	<script>  
 		var chartT = new Highcharts.Chart({
   			chart:{ renderTo : 'chart-temperature' },
+			credits: { enabled: false },
+       		tooltip: { enabled: false },
   			title: { text: 'Aktualna temperatura' },
   			series: [{
     			showInLegend: false,
@@ -68,15 +70,15 @@ const char chart_temp[] PROGMEM = R"=====(
   			}],
   			plotOptions: {
     			line: { animation: false,
-     			 dataLabels: { enabled: true }
+     			 dataLabels: { enabled: false }
     			},
     			series: { color: '#FF0000' }
  			 },
-  			xAxis: { type: 'datetime',
-    			dateTimeLabelFormats: { second: '%H:%M:%S' }
+  			xAxis: { 
+				title: { text: 'Czas (s)' }
   			},
   			yAxis: {
-    			title: { text: 'Temperature (Celsius)' }
+    			title: { text: 'Temperatura (&#8451)' }
   			},
   			credits: { enabled: false }
 		});
@@ -90,9 +92,9 @@ const char chart_temp[] PROGMEM = R"=====(
   			xhttp.onreadystatechange = function() {
     			if (this.readyState == 4 && this.status == 200) {
 					var json = JSON.parse(this.responseText);
-					var x = (new Date()).getTime(),
+					var x = document.timeline.currentTime/1000.0,
           				y = json.actual;
-      				if(chartT.series[0].data.length > 40) {
+      				if(chartT.series[0].data.length > 120) {
         				chartT.series[0].addPoint([x, y], true, true, true);
       				} else {
         				chartT.series[0].addPoint([x, y], true, false, true);
