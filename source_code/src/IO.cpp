@@ -49,12 +49,11 @@ void measure()
   sensors.requestTemperatures();
   if(state.actualTemp == DEVICE_DISCONNECTED_C) 
   {
-    state.heating = Heating::ERROR;
+    state.status = programStatus::ERROR_TEMP_SENSOR;
     state.actualTemp = 0.0f;
   }
   else
   {
-    if(state.heating == Heating::ERROR && state.actualTemp < 100.0f && state.actualTemp > 0.0f) state.heating = Heating::OFF;
+    state.status = programStatus::WORKING;
   }
-
 }

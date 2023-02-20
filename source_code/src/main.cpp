@@ -1,47 +1,14 @@
 #include <Arduino.h>
 
+#include "config.h"
 #include "host.hpp"
 #include "IO.hpp"
+#include "controller.hpp"
 
-//Configuration
-//==================================================
-#define MEASURE_PERIOD_IN_MILLIS 500
-float hysteresis = 1.0f;
-//==================================================
+
 
 State state;
 unsigned long previousMillis = 0;
-
-void execHeating()
-{
-  if(state.heating == Heating::ON) state.power = 255;
-  else state.power = 0;
-}
-
-void controllerWork()
-{
-  //simple bang-bang controller
-  if(state.heating == Heating::ERROR)
-  {
-     execHeating();
-     return;
-  }
-
-  float error = state.targetTemp - state.actualTemp;
-
-  if(state.heating == Heating::OFF  && error > hysteresis)
-  {
-     state.heating = Heating::ON;
-     execHeating();
-     return;
-  }
-  if(state.heating == Heating::ON && error < -hysteresis)
-  {
-     state.heating = Heating::OFF;
-     execHeating();
-     return;
-  }
-}
 
 void setup() 
 {
@@ -57,6 +24,7 @@ void loop()
   {
     previousMillis = now;
     measure();
-    controllerWork();
+    //bangBangController();
+    PID_Controller();
   }
 }

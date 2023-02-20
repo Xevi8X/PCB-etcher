@@ -40,16 +40,14 @@ void changeTarget(float diff)
 }
 
 
-const char* heatingToString(Heating state)
+const char* programStatusToString(programStatus state)
 {
     switch(state)
     {
-        case(Heating::ON):
-            return "ON";
-        case(Heating::OFF):
-            return "OFF";
-        case(Heating::ERROR):
-            return "ERROR";
+        case(programStatus::WORKING):
+            return "WORKING";
+        case(programStatus::ERROR_TEMP_SENSOR):
+            return "ERROR_TEMP_SENSOR";
     }
 	return "UNKNOWN";
 }
@@ -62,7 +60,7 @@ void getData()
   doc["actual"] = state.actualTemp;
   doc["target"] = state.targetTemp;
   doc["power"] = ((int)state.power)*100/255;
-  doc["status"] = heatingToString(state.heating);
+  doc["status"] = programStatusToString(state.status);
   serializeJson(doc,output,128);
   myserver.send(200,"application/json",output);
 }
