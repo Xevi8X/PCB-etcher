@@ -4,13 +4,19 @@
 #include "config.h"
 #include "program_state.h"
 
+typedef struct PID_t
+{
+    float integral = 0.0f;
+    float last_val = FLT_MAX;
+} PID_t;
+
 extern State state;
 PID_t pid_data;
 
 
 void bangBangController()
 {
-  if(state.status != programStatus::WORKING)
+  if(state.status != ProgramStatus::WORKING)
   {
     state.power = 0;
     return;
@@ -32,7 +38,7 @@ void bangBangController()
 
 void PID_Controller()
 {
-  if(state.status != programStatus::WORKING)
+  if(state.status != ProgramStatus::WORKING)
   {
     state.power = 0;
     return;
@@ -61,5 +67,30 @@ void PID_Controller()
   }
 
   state.power = newPower;
+}
 
+void controllerWork()
+{
+  switch (state.controller)
+  {
+    case Controllers::BANG_BANG:
+      bangBangController();
+      break;
+
+    case Controllers::PID:
+      PID_Controller();
+      break;
+
+    default:
+      break;
+  }
+}
+
+void clearControllers()
+{
+  //Bang-bang
+  //Nothing to clean
+  //PID
+  pid_data.integral = 0.0f;
+  pid_data.last_val = FLT_MAX;
 }

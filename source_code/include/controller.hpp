@@ -13,11 +13,8 @@
 
 //==================================================
 
-void bangBangController();
-void PID_Controller();
 
-typedef struct PID_t
-{
-    float integral = 0.0f;
-    float last_val = FLT_MAX;
-} PID_t;
+
+void controllerWork();
+void clearControllers();
+

@@ -57,6 +57,7 @@ const char chart_temp[] PROGMEM = R"=====(
 	</HEAD>
 	<BODY>
 		<div id="chart-temperature" class="container"></div>
+		<div id="chart-power" class="container"></div>
 	</BODY>
 	<script>  
 		var chartT = new Highcharts.Chart({
@@ -83,6 +84,30 @@ const char chart_temp[] PROGMEM = R"=====(
   			credits: { enabled: false }
 		});
 
+		var chartPow = new Highcharts.Chart({
+  			chart:{ renderTo : 'chart-power' },
+			credits: { enabled: false },
+       		tooltip: { enabled: false },
+  			title: { text: 'Aktualna moc' },
+  			series: [{
+    			showInLegend: false,
+    			data: []
+  			}],
+  			plotOptions: {
+    			line: { animation: false,
+     			 dataLabels: { enabled: false }
+    			},
+    			series: { color: '#00FF00' }
+ 			 },
+  			xAxis: { 
+				title: { text: 'Czas (s)' }
+  			},
+  			yAxis: {
+    			title: { text: 'Moc (%)' }
+  			},
+  			credits: { enabled: false }
+		});
+
 		setInterval(function() {
   			getData();
 		}, 500); //ms
@@ -93,11 +118,14 @@ const char chart_temp[] PROGMEM = R"=====(
     			if (this.readyState == 4 && this.status == 200) {
 					var json = JSON.parse(this.responseText);
 					var x = document.timeline.currentTime/1000.0,
-          				y = json.actual;
+          				y = json.actual,
+						z = json.power;
       				if(chartT.series[0].data.length > 120) {
         				chartT.series[0].addPoint([x, y], true, true, true);
+						chartPow.series[0].addPoint([x, z], true, true, true);
       				} else {
         				chartT.series[0].addPoint([x, y], true, false, true);
+						chartPow.series[0].addPoint([x, z], true, false, true);
       				}
     			}
   			};

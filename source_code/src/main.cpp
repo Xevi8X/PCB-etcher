@@ -24,7 +24,6 @@ void loop()
   {
     previousMillis = now;
     measure();
-    //bangBangController();
-    PID_Controller();
+    controllerWork();
   }
 }

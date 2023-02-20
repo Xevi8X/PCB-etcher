@@ -58,15 +58,15 @@ void measure()
   sensors.requestTemperatures();
   if(state.actualTemp == DEVICE_DISCONNECTED_C) 
   {
-    state.status = programStatus::ERROR_TEMP_SENSOR;
+    state.status = ProgramStatus::ERROR_TEMP_SENSOR;
     state.actualTemp = 0.0f;
   }
   else if(state.actualTemp > OVERHEAT_PROTECTION)
   {
-    state.status = programStatus::ERROR_OVERHEAT;
+    state.status = ProgramStatus::ERROR_OVERHEAT;
   }
   else
   {
-    state.status = programStatus::WORKING;
+    state.status = ProgramStatus::WORKING;
   }
 }

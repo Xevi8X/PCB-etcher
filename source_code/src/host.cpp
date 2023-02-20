@@ -40,15 +40,15 @@ void changeTarget(float diff)
 }
 
 
-const char* programStatusToString(programStatus state)
+const char* programStatusToString(ProgramStatus state)
 {
     switch(state)
     {
-        case(programStatus::WORKING):
+        case(ProgramStatus::WORKING):
             return "WORKING";
-        case(programStatus::ERROR_TEMP_SENSOR):
+        case(ProgramStatus::ERROR_TEMP_SENSOR):
             return "ERROR_TEMP_SENSOR";
-        case(programStatus::ERROR_OVERHEAT):
+        case(ProgramStatus::ERROR_OVERHEAT):
             return "ERROR_OVERHEAT";
     }
 	return "UNKNOWN";
