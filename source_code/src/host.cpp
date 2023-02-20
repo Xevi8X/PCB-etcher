@@ -89,6 +89,10 @@ void setPower()
    myserver.send(200);
 }
 
+void handleChartPage() {
+ myserver.send(200, "text/html", chart_temp); //Send web page
+}
+
 void setHandlers()
 {
   myserver.on("/", handleRoot);
@@ -99,6 +103,8 @@ void setHandlers()
   myserver.on("/debug/get", HTTPMethod::HTTP_GET , getDebugData);
   myserver.on("/debug/set", HTTPMethod::HTTP_POST , setDebugParam);
   myserver.on("/setPower", HTTPMethod::HTTP_POST , setPower);
+
+  myserver.on("/chart", HTTPMethod::HTTP_GET , handleChartPage);
 }
 
 void startServer()

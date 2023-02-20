@@ -47,3 +47,61 @@ const char MAIN_page[] PROGMEM = R"=====(
 </BODY>
 </HTML>
 )=====";
+
+const char chart_temp[] PROGMEM = R"=====(
+<HTML>
+	<HEAD>
+		<TITLE>Wykres temp</TITLE>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+  		<script src=https://code.highcharts.com/highcharts.js></script>
+	</HEAD>
+	<BODY>
+		<div id="chart-temperature" class="container"></div>
+	</BODY>
+	<script>  
+		var chartT = new Highcharts.Chart({
+  			chart:{ renderTo : 'chart-temperature' },
+  			title: { text: 'Aktualna temperatura' },
+  			series: [{
+    			showInLegend: false,
+    			data: []
+  			}],
+  			plotOptions: {
+    			line: { animation: false,
+     			 dataLabels: { enabled: true }
+    			},
+    			series: { color: '#FF0000' }
+ 			 },
+  			xAxis: { type: 'datetime',
+    			dateTimeLabelFormats: { second: '%H:%M:%S' }
+  			},
+  			yAxis: {
+    			title: { text: 'Temperature (Celsius)' }
+  			},
+  			credits: { enabled: false }
+		});
+
+		setInterval(function() {
+  			getData();
+		}, 500); //ms
+
+		function getData() {
+  			var xhttp = new XMLHttpRequest();
+  			xhttp.onreadystatechange = function() {
+    			if (this.readyState == 4 && this.status == 200) {
+					var json = JSON.parse(this.responseText);
+					var x = (new Date()).getTime(),
+          				y = json.actual;
+      				if(chartT.series[0].data.length > 40) {
+        				chartT.series[0].addPoint([x, y], true, true, true);
+      				} else {
+        				chartT.series[0].addPoint([x, y], true, false, true);
+      				}
+    			}
+  			};
+  			xhttp.open("GET", "data", true);
+  			xhttp.send();
+		}	  
+	</script> 
+</HTML>
+)=====";
