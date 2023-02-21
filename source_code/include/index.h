@@ -43,6 +43,7 @@ const char MAIN_page[] PROGMEM = R"=====(
 		<p>Actual temperature: <span id="actual">0</span> &#8451</p>
 		<p>Heating power: <span id="power">0</span> %</p>
 		<p>Status: <span id="status">UNKNOWN</span> </p>
+		<p><button onclick="location.href='/chart'">Otw&#243rz wykresy</button></p>
 	</CENTER>	
 </BODY>
 </HTML>
@@ -51,24 +52,39 @@ const char MAIN_page[] PROGMEM = R"=====(
 const char chart_temp[] PROGMEM = R"=====(
 <HTML>
 	<HEAD>
-		<TITLE>Wykres temp</TITLE>
+		<TITLE>Wykresy</TITLE>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
   		<script src=https://code.highcharts.com/highcharts.js></script>
 	</HEAD>
 	<BODY>
+		<center>
+			<button onclick="start()">Start</button> <button onclick="stop()">Stop</button> <button onclick="location.href='/'">Powr&#243t</button>
+		</center>
 		<div id="chart-temperature" class="container"></div>
 		<div id="chart-power" class="container"></div>
 	</BODY>
 	<script>  
+		var isRunning = true;
+  
 		var chartT = new Highcharts.Chart({
-  			chart:{ renderTo : 'chart-temperature' },
+  			chart:{ renderTo : 'chart-temperature' ,animation: false},
 			credits: { enabled: false },
        		tooltip: { enabled: false },
-  			title: { text: 'Aktualna temperatura' },
-  			series: [{
-    			showInLegend: false,
-    			data: []
-  			}],
+  			title: { text: 'Temperatura' },
+  			series: [
+			{
+    			showInLegend: true,
+    			data: [],
+			color: '#00FF00',
+			name: 'aktualna'
+  			},
+			{
+    			showInLegend: true,
+    			data: [],
+			color: '#0000FF',
+			name: 'zadana'
+  			}
+			],
   			plotOptions: {
     			line: { animation: false,
      			 dataLabels: { enabled: false }
@@ -84,8 +100,9 @@ const char chart_temp[] PROGMEM = R"=====(
   			credits: { enabled: false }
 		});
 
+
 		var chartPow = new Highcharts.Chart({
-  			chart:{ renderTo : 'chart-power' },
+  			chart:{ renderTo : 'chart-power' ,animation: false},
 			credits: { enabled: false },
        		tooltip: { enabled: false },
   			title: { text: 'Aktualna moc' },
@@ -97,7 +114,7 @@ const char chart_temp[] PROGMEM = R"=====(
     			line: { animation: false,
      			 dataLabels: { enabled: false }
     			},
-    			series: { color: '#00FF00' }
+    			series: { color: '#FF0000' }
  			 },
   			xAxis: { 
 				title: { text: 'Czas (s)' }
@@ -109,7 +126,10 @@ const char chart_temp[] PROGMEM = R"=====(
 		});
 
 		setInterval(function() {
-  			getData();
+			if(isRunning)
+			{
+				getData();
+			}
 		}, 500); //ms
 
 		function getData() {
@@ -117,21 +137,27 @@ const char chart_temp[] PROGMEM = R"=====(
   			xhttp.onreadystatechange = function() {
     			if (this.readyState == 4 && this.status == 200) {
 					var json = JSON.parse(this.responseText);
-					var x = document.timeline.currentTime/1000.0,
-          				y = json.actual,
-						z = json.power;
+					var t = document.timeline.currentTime/1000.0,
+          			actual = json.actual,
+					target = json.target,
+					power = json.power;
       				if(chartT.series[0].data.length > 120) {
-        				chartT.series[0].addPoint([x, y], true, true, true);
-						chartPow.series[0].addPoint([x, z], true, true, true);
+        				chartT.series[0].addPoint([t, actual], true, true, true);
+						chartT.series[1].addPoint([t, target], true, true, true);
+						chartPow.series[0].addPoint([t, power], true, true, true);
       				} else {
-        				chartT.series[0].addPoint([x, y], true, false, true);
-						chartPow.series[0].addPoint([x, z], true, false, true);
+        				chartT.series[0].addPoint([t, actual], true, false, true);
+						chartT.series[1].addPoint([t, target], true, false, true);
+						chartPow.series[0].addPoint([t, power], true, false, true);
       				}
     			}
   			};
   			xhttp.open("GET", "data", true);
   			xhttp.send();
-		}	  
+		}
+
+		function start() { isRunning = true; }
+		function stop() { isRunning = false; }  
 	</script> 
 </HTML>
 )=====";
