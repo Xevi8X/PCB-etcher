@@ -169,6 +169,13 @@ const char controller_page[] PROGMEM = R"=====(
 <HTML>
 	<HEAD>
 			<TITLE>Controller</TITLE>
+		<style>
+			input {width: 70px}
+			td {width: 100px}
+			table, th, td {
+  				border:1px solid black;
+			}
+		</style>
 	</HEAD>
 <BODY>
 	<center>
@@ -177,12 +184,49 @@ const char controller_page[] PROGMEM = R"=====(
 		<p>Controller type: <span id="controller">UNKNOWN</span> </p>
 		<p><button onclick="changeController(1)">PID</button> <button onclick="changeController(2)">Bang-bang</button> <button onclick="changeController(3)">None</button></p>
 		<p><h2>PID:</h2></p>
-		<p>Kp: <span id="kp">0</span> </p>
-		<p>Ki: <span id="ki">0</span> </p>
-		<p>Kd: <span id="kd">0</span> </p>
-		<p>Anty-windup: <span id="antywindup">0</span> </p>
+		<table>
+			<tr>
+				<td>Kp: </td>
+				<td align="right"><span id="kp">0</span></td>
+				<td align="center"><input type="number" step="0.01" id="kp_input" name="kp_input"> </td>
+			</tr>
+			<tr>
+				<td>Ki: </td>
+				<td align="right"><span id="ki">0</span></td>
+				<td align="center"><input type="number" step="0.01" id="ki_input" name="ki_input"> </td>
+			</tr>
+			<tr>
+				<td>Kd: </td>
+				<td align="right"><span id="kd">0</span></td>
+				<td align="center"><input type="number" step="0.01" id="kd_input" name="kd_input"> </td>
+			</tr>
+			<tr>
+				<td>Anty-windup: </td>
+				<td align="right"><span id="antywindup">false</span></td>
+				<td align="center"><button onclick="toggleAntywindup()">Toggle</button> </td>
+			</tr>
+		</table>
+		
+		
+		
 		<p><h2>Bang-bang:</h2></p>
-		<p>Hysteresis: <span id="hysteresis">0</span> &#8451</p>
+		<table>
+			<tr>
+				<td>Hysteresis: </td>
+				<td align="right"><span id="hysteresis">0</span> &#8451</td>
+				<td align="center"><input type="number" step="0.1" id="hysteresis_input" name="hysteresis_input"></td>
+			</tr>
+		</table>
+
+		<p><h2>None (manual):</h2></p>
+		<table>
+			<tr>
+				<td>Power: </td>
+				<td align="right"><span id="power">0</span> %</td>
+				<td align="center"><input type="number" step="1" min="0" max="100" id="power_input" name="power_input"></td>
+			</tr>
+		</table>
+		<button margin-top: 25px; onclick="update()">Update</button>
 	</center>
 </BODY>
 <script type = "text/javascript">  
@@ -194,6 +238,30 @@ const char controller_page[] PROGMEM = R"=====(
 			body: formData
 			});
 	}
+
+	function update() {
+		let formData = new FormData();
+
+		if(document.getElementById('kp_input').value != "") formData.append('kp', document.getElementById('kp_input').value);
+		if(document.getElementById('ki_input').value != "") formData.append('ki', document.getElementById('ki_input').value);
+		if(document.getElementById('kd_input').value != "") formData.append('kd', document.getElementById('kd_input').value);
+		if(document.getElementById('hysteresis_input').value != "") formData.append('hysteresis', document.getElementById('hysteresis_input').value);
+		if(document.getElementById('power_input').value != "") formData.append('power', document.getElementById('power_input').value);
+
+		fetch("controller/setParams", {
+  			method: "POST",
+			body: formData
+			});
+	}
+
+	function toggleAntywindup() {
+		let formData = new FormData();
+		formData.append('antywindup', 1);
+		fetch("controller/setParams", {
+  			method: "POST",
+			body: formData
+			});
+	}	
 
 	setInterval(function() {
 		getData();
@@ -212,6 +280,8 @@ const char controller_page[] PROGMEM = R"=====(
 			document.getElementById("antywindup").innerHTML = json.antywindup;
 
 			document.getElementById("hysteresis").innerHTML = parseFloat(json.hysteresis).toFixed( 1 );
+
+			document.getElementById("power").innerHTML = json.power;
 			}
 		};
 		xhttp.open("GET", "controller/data", true);
