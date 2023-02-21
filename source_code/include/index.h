@@ -43,7 +43,7 @@ const char MAIN_page[] PROGMEM = R"=====(
 		<p>Actual temperature: <span id="actual">0</span> &#8451</p>
 		<p>Heating power: <span id="power">0</span> %</p>
 		<p>Status: <span id="status">UNKNOWN</span> </p>
-		<p><button onclick="location.href='/chart'">Otw&#243rz wykresy</button></p>
+		<p><button onclick="location.href='/chart'">Charts</button> <button onclick="location.href='/controller'"> Controller </button></p>
 	</CENTER>	
 </BODY>
 </HTML>
@@ -52,13 +52,13 @@ const char MAIN_page[] PROGMEM = R"=====(
 const char chart_temp[] PROGMEM = R"=====(
 <HTML>
 	<HEAD>
-		<TITLE>Wykresy</TITLE>
+		<TITLE>Charts</TITLE>
 		<meta name="viewport" content="width=device-width, initial-scale=1">
   		<script src=https://code.highcharts.com/highcharts.js></script>
 	</HEAD>
 	<BODY>
 		<center>
-			<button onclick="start()">Start</button> <button onclick="stop()">Stop</button> <button onclick="location.href='/'">Powr&#243t</button>
+			<button onclick="start()">Start</button> <button onclick="stop()">Stop</button> <button onclick="location.href='/'">Back</button>
 		</center>
 		<div id="chart-temperature" class="container"></div>
 		<div id="chart-power" class="container"></div>
@@ -70,19 +70,19 @@ const char chart_temp[] PROGMEM = R"=====(
   			chart:{ renderTo : 'chart-temperature' ,animation: false},
 			credits: { enabled: false },
        		tooltip: { enabled: false },
-  			title: { text: 'Temperatura' },
+  			title: { text: 'Temperature' },
   			series: [
 			{
     			showInLegend: true,
     			data: [],
 			color: '#00FF00',
-			name: 'aktualna'
+			name: 'Actual'
   			},
 			{
     			showInLegend: true,
     			data: [],
 			color: '#0000FF',
-			name: 'zadana'
+			name: 'Target'
   			}
 			],
   			plotOptions: {
@@ -92,10 +92,10 @@ const char chart_temp[] PROGMEM = R"=====(
     			series: { color: '#FF0000' }
  			 },
   			xAxis: { 
-				title: { text: 'Czas (s)' }
+				title: { text: 'Time (s)' }
   			},
   			yAxis: {
-    			title: { text: 'Temperatura (&#8451)' }
+    			title: { text: 'Temperature (&#8451)' }
   			},
   			credits: { enabled: false }
 		});
@@ -105,7 +105,7 @@ const char chart_temp[] PROGMEM = R"=====(
   			chart:{ renderTo : 'chart-power' ,animation: false},
 			credits: { enabled: false },
        		tooltip: { enabled: false },
-  			title: { text: 'Aktualna moc' },
+  			title: { text: 'Actual power' },
   			series: [{
     			showInLegend: false,
     			data: []
@@ -117,10 +117,10 @@ const char chart_temp[] PROGMEM = R"=====(
     			series: { color: '#FF0000' }
  			 },
   			xAxis: { 
-				title: { text: 'Czas (s)' }
+				title: { text: 'Time (s)' }
   			},
   			yAxis: {
-    			title: { text: 'Moc (%)' }
+    			title: { text: 'Power (%)' }
   			},
   			credits: { enabled: false }
 		});
