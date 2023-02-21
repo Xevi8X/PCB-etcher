@@ -3,7 +3,7 @@
 const char MAIN_page[] PROGMEM = R"=====(
 <HTML>
 	<HEAD>
-			<TITLE>Wytrawiarka</TITLE>
+			<TITLE>Etcher</TITLE>
 	</HEAD>
 <BODY>
 	<script type = "text/javascript">  
@@ -31,6 +31,7 @@ const char MAIN_page[] PROGMEM = R"=====(
       			document.getElementById("target").innerHTML = json.target;
 				document.getElementById("actual").innerHTML = json.actual;
 				document.getElementById("power").innerHTML = json.power;
+				document.getElementById("controller").innerHTML = json.controller;
 				document.getElementById("status").innerHTML = json.status;
     			}
   			};
@@ -39,9 +40,11 @@ const char MAIN_page[] PROGMEM = R"=====(
 		}	  
 	</script> 
 	<CENTER>
+		<p><h2>Info:</h2></p>
 		<p>Target temperature: <span id="target">0</span> &#8451 <input type = "button" onclick = "increase()" value = "+">  <input type = "button" onclick = "decrease()" value = "-"></p> 
 		<p>Actual temperature: <span id="actual">0</span> &#8451</p>
 		<p>Heating power: <span id="power">0</span> %</p>
+		<p>Controller: <span id="controller">UNKNOWN</span> </p>
 		<p>Status: <span id="status">UNKNOWN</span> </p>
 		<p><button onclick="location.href='/chart'">Charts</button> <button onclick="location.href='/controller'"> Controller </button></p>
 	</CENTER>	
@@ -49,7 +52,7 @@ const char MAIN_page[] PROGMEM = R"=====(
 </HTML>
 )=====";
 
-const char chart_temp[] PROGMEM = R"=====(
+const char chart_page[] PROGMEM = R"=====(
 <HTML>
 	<HEAD>
 		<TITLE>Charts</TITLE>
@@ -159,5 +162,61 @@ const char chart_temp[] PROGMEM = R"=====(
 		function start() { isRunning = true; }
 		function stop() { isRunning = false; }  
 	</script> 
+</HTML>
+)=====";
+
+const char controller_page[] PROGMEM = R"=====(
+<HTML>
+	<HEAD>
+			<TITLE>Controller</TITLE>
+	</HEAD>
+<BODY>
+	<center>
+		<button onclick="location.href='/'">Back</button>
+		<p><h2>Controller:</h2></p>
+		<p>Controller type: <span id="controller">UNKNOWN</span> </p>
+		<p><button onclick="changeController(1)">PID</button> <button onclick="changeController(2)">Bang-bang</button> <button onclick="changeController(3)">None</button></p>
+		<p><h2>PID:</h2></p>
+		<p>Kp: <span id="kp">0</span> </p>
+		<p>Ki: <span id="ki">0</span> </p>
+		<p>Kd: <span id="kd">0</span> </p>
+		<p>Anty-windup: <span id="antywindup">0</span> </p>
+		<p><h2>Bang-bang:</h2></p>
+		<p>Hysteresis: <span id="hysteresis">0</span> &#8451</p>
+	</center>
+</BODY>
+<script type = "text/javascript">  
+	function changeController(type_no) {
+		let formData = new FormData();
+		formData.append('type', type_no);
+		fetch("controller/setType", {
+  			method: "POST",
+			body: formData
+			});
+	}
+
+	setInterval(function() {
+		getData();
+	}, 500); //ms
+
+	function getData() {
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function() {
+			if (this.readyState == 4 && this.status == 200) {
+			var json = JSON.parse(this.responseText);
+			document.getElementById("controller").innerHTML = json.controller;
+
+			document.getElementById("kp").innerHTML = parseFloat(json.kp).toFixed( 2 );
+			document.getElementById("ki").innerHTML = parseFloat(json.ki).toFixed( 2 );
+			document.getElementById("kd").innerHTML = parseFloat(json.kd).toFixed( 2 );
+			document.getElementById("antywindup").innerHTML = json.antywindup;
+
+			document.getElementById("hysteresis").innerHTML = parseFloat(json.hysteresis).toFixed( 1 );
+			}
+		};
+		xhttp.open("GET", "controller/data", true);
+		xhttp.send();
+	}	  
+</script> 
 </HTML>
 )=====";

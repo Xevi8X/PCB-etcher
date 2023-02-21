@@ -4,17 +4,17 @@
 //==================================================
 
 //BANG-BANG
-#define HYSTERESIS 1.0f
+#define Hysteresis_init 1.0f
 
 //PID
-#define Kp 1.0f
-#define Ki 0.05f
-#define Kd 0.1f
+#define Kp_init 1.0f
+#define Ki_init 0.05f
+#define Kd_init 0.1f
 
 //==================================================
 
 
-
+void initControllers();
 void controllerWork();
 void clearControllers();
 

@@ -3,6 +3,7 @@
 #include "host.hpp"
 #include "WiFiCredentials.h"
 #include "index.h"
+#include "controller.hpp"
 
 
 ESP8266WebServer myserver(80);
@@ -54,15 +55,45 @@ const char* programStatusToString(ProgramStatus state)
 	return "UNKNOWN";
 }
 
+const char* controllerToString(Controllers controller)
+{
+    switch(controller)
+    {
+        case(Controllers::NONE):
+            return "NONE";
+        case(Controllers::BANG_BANG):
+            return "BANG-BANG";
+        case(Controllers::PID):
+            return "PID";
+    }
+	return "UNKNOWN";
+}
+
 void getData()
 {
-  const int cap = JSON_OBJECT_SIZE(4);
+  const int cap = JSON_OBJECT_SIZE(5);
   char output[256]; 
   StaticJsonDocument<cap> doc;
   doc["actual"] = state.actualTemp;
   doc["target"] = state.targetTemp;
   doc["power"] = ((int)state.power)*100/255;
   doc["status"] = programStatusToString(state.status);
+  doc["controller"] = controllerToString(state.controller);
+  serializeJson(doc,output,128);
+  myserver.send(200,"application/json",output);
+}
+
+void getControllerData()
+{
+  const int cap = JSON_OBJECT_SIZE(6);
+  char output[256]; 
+  StaticJsonDocument<cap> doc;
+  doc["controller"] = controllerToString(state.controller);
+  doc["kp"] = state.controller_param.Kp;
+  doc["ki"] = state.controller_param.Ki;
+  doc["kd"] = state.controller_param.Kd;
+  doc["antywindup"] = state.controller_param.antyWindUp;
+  doc["hysteresis"] = state.controller_param.hysteresis;
   serializeJson(doc,output,128);
   myserver.send(200,"application/json",output);
 }
@@ -85,26 +116,58 @@ void setDebugParam()
 
 void setPower()
 {
-   state.power = myserver.arg("power").toInt();
+   if(state.controller == Controllers::NONE) state.power = myserver.arg("power").toInt();
    myserver.send(200);
 }
 
+void setType()
+{
+  int type = myserver.arg("type").toInt();
+  switch(type)
+  {
+    case 1:
+      state.controller = Controllers::PID;
+    break;
+    case 2:
+      state.controller = Controllers::BANG_BANG;
+    break;
+    case 3:
+      state.controller = Controllers::NONE;
+    break;
+  }
+  clearControllers();
+  myserver.send(200);
+}
+
 void handleChartPage() {
- myserver.send(200, "text/html", chart_temp); //Send web page
+ myserver.send(200, "text/html", chart_page); //Send web page
+}
+
+void handleControllerPage() {
+ myserver.send(200, "text/html", controller_page); //Send web page
 }
 
 void setHandlers()
 {
-  myserver.on("/", handleRoot);
+  //===COMMON DATA===
   myserver.on("/target/set", HTTPMethod::HTTP_POST , setTargetHandler);
   myserver.on("/target/increase", HTTPMethod::HTTP_POST ,[](){changeTarget(STEP);});
   myserver.on("/target/decrease", HTTPMethod::HTTP_POST , [](){changeTarget(-STEP);});
   myserver.on("/data", HTTPMethod::HTTP_GET , getData);
+
+  //===DEBUG===
   myserver.on("/debug/get", HTTPMethod::HTTP_GET , getDebugData);
   myserver.on("/debug/set", HTTPMethod::HTTP_POST , setDebugParam);
-  myserver.on("/setPower", HTTPMethod::HTTP_POST , setPower);
 
+  //===CONTROLLER===
+  myserver.on("/controller/data",HTTPMethod::HTTP_GET , getControllerData);
+  myserver.on("/controller/setPower", HTTPMethod::HTTP_POST , setPower);
+  myserver.on("/controller/setType", HTTPMethod::HTTP_POST , setType);
+
+  //===PAGES===
+  myserver.on("/", handleRoot);
   myserver.on("/chart", HTTPMethod::HTTP_GET , handleChartPage);
+  myserver.on("/controller", HTTPMethod::HTTP_GET , handleControllerPage);
 }
 
 void startServer()

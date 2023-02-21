@@ -14,6 +14,7 @@ void setup()
 {
   startServer();
   IO_init();
+  initControllers();
 }
 
 void loop() 
