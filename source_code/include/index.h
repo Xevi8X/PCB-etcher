@@ -70,9 +70,7 @@ const char chart_page[] PROGMEM = R"=====(
 		var isRunning = true;
   
 		var chartT = new Highcharts.Chart({
-  			chart:{ renderTo : 'chart-temperature' ,animation: false},
-			credits: { enabled: false },
-       		tooltip: { enabled: false },
+  			chart:{ renderTo : 'chart-temperature' ,animation: true},
   			title: { text: 'Temperature' },
   			series: [
 			{
@@ -105,9 +103,7 @@ const char chart_page[] PROGMEM = R"=====(
 
 
 		var chartPow = new Highcharts.Chart({
-  			chart:{ renderTo : 'chart-power' ,animation: false},
-			credits: { enabled: false },
-       		tooltip: { enabled: false },
+  			chart:{ renderTo : 'chart-power' ,animation: true},
   			title: { text: 'Actual power' },
   			series: [{
     			showInLegend: false,
@@ -144,7 +140,7 @@ const char chart_page[] PROGMEM = R"=====(
           			actual = json.actual,
 					target = json.target,
 					power = json.power;
-      				if(chartT.series[0].data.length > 120) {
+      				if(chartT.series[0].data.length > 2048) {
         				chartT.series[0].addPoint([t, actual], true, true, true);
 						chartT.series[1].addPoint([t, target], true, true, true);
 						chartPow.series[0].addPoint([t, power], true, true, true);
