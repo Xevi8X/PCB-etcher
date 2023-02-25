@@ -48,7 +48,8 @@ void PID_Controller()
   //P
   float tmp = state.controller_param.Kp * error; 
   //I
-  pid_data.integral += error * MEASURE_PERIOD_IN_MILLIS/1000.0f;
+  float dI = error * MEASURE_PERIOD_IN_MILLIS/1000.0f;
+  pid_data.integral += dI;
   tmp += state.controller_param.Ki*pid_data.integral;
   //D
   if(pid_data.last_val != FLT_MAX)
@@ -57,20 +58,24 @@ void PID_Controller()
 
   //SATURATION
   int newPower = (int)tmp;
+  bool overshoot = false;
   if(newPower > 255)
   {
+    overshoot= true;
     newPower = 255;
   }
   if(newPower < 0)
   {
+    overshoot= true;
     newPower = 0;
   }
 
-  if(state.controller_param.antyWindUp)
+  //ANTI-WINDUP - CLAMPING
+  if(state.controller_param.antyWindUp && overshoot)
   {
-    //TODO: ANTY WINDUP
+    if((error > 0 && newPower == 255) || (error < 0 && newPower == 0))
+    pid_data.integral -= dI;
   }
-
   state.power = newPower;
 }
 
