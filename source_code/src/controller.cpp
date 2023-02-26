@@ -48,13 +48,22 @@ void PID_Controller()
   //P
   float tmp = state.controller_param.Kp * error; 
   //I
-  float dI = error * MEASURE_PERIOD_IN_MILLIS/1000.0f;
-  pid_data.integral += dI;
-  tmp += state.controller_param.Ki*pid_data.integral;
+  bool I_action = fabs(error) < I_ACTION_RANGE;
+  float dI;
+  if(I_action)
+  {
+    dI = error * MEASURE_PERIOD_IN_MILLIS/1000.0f;
+    pid_data.integral += dI;
+    tmp += state.controller_param.Ki*pid_data.integral;
+  }
+  else pid_data.integral = 0.0f;
   //D
-  if(pid_data.last_val != FLT_MAX)
-   tmp += state.controller_param.Kd* (error-pid_data.last_val)*1000.0f/MEASURE_PERIOD_IN_MILLIS;
+  if(pid_data.last_val != FLT_MAX && state.controller_param.Kd != 0.0f)
+  {
+    tmp += state.controller_param.Kd* (error-pid_data.last_val)*1000.0f/MEASURE_PERIOD_IN_MILLIS;
+  }
   pid_data.last_val = error;
+  
 
   //SATURATION
   int newPower = (int)tmp;
@@ -71,11 +80,12 @@ void PID_Controller()
   }
 
   //ANTI-WINDUP - CLAMPING
-  if(state.controller_param.antyWindUp && overshoot)
+  if(I_action && state.controller_param.antyWindUp && overshoot)
   {
     if((error > 0 && newPower == 255) || (error < 0 && newPower == 0))
     pid_data.integral -= dI;
   }
+
   state.power = newPower;
 }
 
