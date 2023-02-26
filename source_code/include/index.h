@@ -222,7 +222,7 @@ const char controller_page[] PROGMEM = R"=====(
 				<td align="center"><input type="number" step="1" min="0" max="100" id="power_input" name="power_input"></td>
 			</tr>
 		</table>
-		<button margin-top: 25px; onclick="update()">Update</button>
+		<button margin-top: 25px; onclick="update()">Update</button> <button margin-top: 25px; onclick="save()">Save</button>
 	</center>
 </BODY>
 <script type = "text/javascript">  
@@ -257,7 +257,13 @@ const char controller_page[] PROGMEM = R"=====(
   			method: "POST",
 			body: formData
 			});
-	}	
+	}
+
+	function save() {   
+			fetch("/eeprom/save", {
+  			method: "POST"
+			});
+        }	
 
 	setInterval(function() {
 		getData();

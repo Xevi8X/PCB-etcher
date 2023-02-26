@@ -12,9 +12,9 @@ unsigned long previousMillis = 0;
 
 void setup() 
 {
-  startServer();
   IO_init();
   initControllers();
+  startServer();
 }
 
 void loop() 

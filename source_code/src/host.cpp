@@ -4,6 +4,7 @@
 #include "WiFiCredentials.h"
 #include "index.h"
 #include "controller.hpp"
+#include "myEEPROM.hpp"
 
 
 ESP8266WebServer myserver(80);
@@ -169,6 +170,12 @@ void handleControllerPage() {
  myserver.send(200, "text/html", controller_page); //Send web page
 }
 
+void saveEEPROM()
+{
+  saveControllerParams();
+  myserver.send(200);
+}
+
 void setHandlers()
 {
   //===COMMON DATA===
@@ -185,6 +192,9 @@ void setHandlers()
   myserver.on("/controller/data",HTTPMethod::HTTP_GET , getControllerData);
   myserver.on("/controller/setParams", HTTPMethod::HTTP_POST , setParams);
   myserver.on("/controller/setType", HTTPMethod::HTTP_POST , setType);
+
+  //===EEPROM===
+  myserver.on("/eeprom/save", HTTPMethod::HTTP_POST , saveEEPROM);
 
   //===PAGES===
   myserver.on("/", handleRoot);

@@ -3,6 +3,7 @@
 #include "controller.hpp"
 #include "config.h"
 #include "program_state.h"
+#include "myEEPROM.hpp"
 
 typedef struct PID_data_t
 {
@@ -91,11 +92,13 @@ void PID_Controller()
 
 void initControllers()
 {
-  state.controller_param.Kp = Kp_init;
-  state.controller_param.Ki = Ki_init;
-  state.controller_param.Kd = Kd_init;
-  state.controller_param.hysteresis = Hysteresis_init;
-  state.controller_param.antyWindUp = false;
+  getControllerParams();
+
+  // state.controller_param.Kp = Kp_init;
+  // state.controller_param.Ki = Ki_init;
+  // state.controller_param.Kd = Kd_init;
+  // state.controller_param.hysteresis = Hysteresis_init;
+  // state.controller_param.antyWindUp = false;
 }
 
 void controllerWork()
